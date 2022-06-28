@@ -47,7 +47,7 @@ async def say_hello():
     return {"greeting": "This is an example of an scalable ml pipeline!"}
 
 
-@app.post("/predict")
+@app.post("/predict/")
 def predict(input: Input):
     cat_features = [
         "workclass",
