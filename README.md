@@ -2,6 +2,8 @@ The main purpose of this repo is to deploy an scalable ML pipeline following bes
 The app can be seen at: [heroku](https://deploying-scalable-ml-pipeline.herokuapp.com/)
 
 # Repo Structure
+
+```bash
 .
 ├── data
 │   ├── census.csv
@@ -44,4 +46,4 @@ The app can be seen at: [heroku](https://deploying-scalable-ml-pipeline.herokuap
 │   └── train_model.py
 ├── test_app.py
 └── test_model.py
-
+```
