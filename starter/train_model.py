@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 data = pd.read_csv("../data/census.csv")
 data.columns = data.columns.str.strip()
 # %% train-test split.
-train, test = train_test_split(data, test_size=0.20)
+train, test = train_test_split(data, test_size=0.20, random_state=42)
 
 cat_features = [
     "workclass",
