@@ -6,3 +6,4 @@ requests
 fastapi==0.74.0
 uvicorn==0.17.5
 gunicorn
+tqdm==4.64.0

@@ -1,5 +1,11 @@
 from sklearn.metrics import fbeta_score, precision_score, recall_score
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.base import ClassifierMixin
+from sklearn.model_selection import train_test_split
+from tqdm.auto import trange
+from .data import process_data
+import pandas as pd
+import numpy as np
 
 
 def train_model(X_train, y_train):
@@ -25,7 +31,8 @@ def train_model(X_train, y_train):
 
 def compute_model_metrics(y, preds):
     """
-    Validates the trained machine learning model using precision, recall, and F1.
+    Validates the trained machine learning model using precision, recall, 
+    and f1 score.
 
     Inputs
     ------
@@ -60,3 +67,68 @@ def inference(model, X):
         Predictions from the model.
     """
     return model.predict(X)
+
+
+def compute_model_metrics_slices(
+        model: ClassifierMixin,
+        encoder,
+        lb,
+        df: pd.DataFrame) -> pd.DataFrame:
+    """compute model metrics on slices of categorical data
+
+    Args:
+        model (ClassifierMixin): sklearn classifier
+        df (pd.DataFrame): dataframe used to train and validate model
+
+    Returns:
+        pd.DataFrame: metrics on slices sorted by f1_score
+    """
+    cat_features = [
+        "workclass",
+        "education",
+        "marital-status",
+        "occupation",
+        "relationship",
+        "race",
+        "sex",
+        "native-country",
+    ]
+    # Get test data with same seed as for training
+    _, test = train_test_split(df, test_size=0.20, random_state=42)
+    X_test, y_test, _, _ = process_data(
+        test, categorical_features=cat_features, label="salary",
+        training=False, encoder=encoder, lb=lb)
+
+    encoded_feature = encoder.get_feature_names_out()
+    n_features = X_test.shape[1]
+
+    # predict for only data where ohe(category_value) == 1
+    performance_dict = {}
+    for k in trange(6, n_features):
+        mask = (X_test[:, k] == 1)
+        try:
+            preds = model.predict(X_test[mask])
+            performance_dict[encoded_feature[k - 6]
+                             ] = compute_model_metrics(y_test[mask], preds)
+        except ValueError:
+            # if that category is not in test, then return nan
+            performance_dict[encoded_feature[k - 6]] = (np.nan, np.nan, np.nan)
+
+    performance = pd.DataFrame.from_dict(performance_dict,
+                                         orient="index",
+                                         columns=["precision", "recall", "f1"])
+
+    # map xk_ to category name
+    x2cat = dict(
+        zip([f"x{k}" for k in range(len(cat_features))], cat_features))
+    # Add category column to performance dataframe
+    performance["category"] = performance.index.str.extract(r"(x\d)")[
+        0].map(x2cat).values
+    performance.index = performance.index.str.replace(
+        r"(x\d_ )", "", regex=True)
+
+    return performance.sort_values(by="f1", ascending=False)
+
+
+if __name__ == "__main__":
+    pass
