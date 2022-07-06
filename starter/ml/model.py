@@ -72,8 +72,8 @@ def inference(model, X):
 def compute_model_metrics_slices(
         model: ClassifierMixin,
         encoder,
-        lb,
-        df: pd.DataFrame) -> pd.DataFrame:
+        X_test,
+        y_test) -> pd.DataFrame:
     """compute model metrics on slices of categorical data
 
     Args:
@@ -93,11 +93,6 @@ def compute_model_metrics_slices(
         "sex",
         "native-country",
     ]
-    # Get test data with same seed as for training
-    _, test = train_test_split(df, test_size=0.20, random_state=42)
-    X_test, y_test, _, _ = process_data(
-        test, categorical_features=cat_features, label="salary",
-        training=False, encoder=encoder, lb=lb)
 
     encoded_feature = encoder.get_feature_names_out()
     n_features = X_test.shape[1]
@@ -127,6 +122,8 @@ def compute_model_metrics_slices(
     performance.index = performance.index.str.replace(
         r"(x\d_ )", "", regex=True)
 
+    performance.rename_axis("subcategory", inplace=True)
+    performance.to_csv(r'metric_on_slices.txt', sep=' ', mode='a')
     return performance.sort_values(by="f1", ascending=False)
 
 

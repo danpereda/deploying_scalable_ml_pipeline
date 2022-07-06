@@ -2,7 +2,7 @@
 import pandas as pd
 import joblib
 from ml.data import process_data
-from ml.model import train_model, compute_model_metrics, inference
+from ml.model import train_model, compute_model_metrics, compute_model_metrics_slices
 from sklearn.model_selection import train_test_split
 # %% Add code to load in the data.
 data = pd.read_csv("../data/census.csv")
@@ -43,3 +43,5 @@ precision, recall, fbeta = compute_model_metrics(y_test, preds)
 print(f"Precision:{precision:%}")
 print(f"Recall:{recall:%}")
 print(f"fbeta:{fbeta:%}")
+
+compute_model_metrics_slices(model, encoder, X_test, y_test)
